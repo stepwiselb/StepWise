@@ -171,9 +171,8 @@
   /* credits */
   .credits {
     display: flex;
-    gap: 14px;
-    justify-content: center;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 12px;
     animation: fadeUp .7s .35s ease both;
     margin-bottom: 20px;
   }
@@ -181,19 +180,18 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 18px 10px;
-    text-align: center;
-    flex: 1;
-    min-width: 90px;
-    max-width: 140px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
     transition: border-color .2s, transform .2s;
   }
   .credit-card:hover {
     border-color: rgba(0,194,255,.3);
-    transform: translateY(-3px);
+    transform: translateX(4px);
   }
   .credit-avatar {
-    width: 40px; height: 40px;
+    width: 44px; height: 44px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--accent2), var(--accent));
     color: #000;
@@ -201,18 +199,17 @@
     font-size: 1.1rem;
     font-weight: 800;
     display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 10px;
+    flex-shrink: 0;
   }
   .credit-name {
     font-family: 'Syne', sans-serif;
-    font-size: .75rem;
+    font-size: .95rem;
     font-weight: 700;
-    margin-bottom: 4px;
-    word-break: break-word;
+    margin-bottom: 3px;
   }
   .credit-role {
-    font-size: .6rem;
-    letter-spacing: 1px;
+    font-size: .68rem;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--muted);
   }
