@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StepWise — AI-Powered Smart Shoe System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#080a0f;--surface:#0e1118;--surface2:#151b26;
+      --accent:#00e5ff;--accent2:#0077ff;
+      --text:#e8edf5;--muted:#6b7a95;--border:rgba(255,255,255,0.07);
+      --green:#00e676;--red:#ff5252;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;overflow-x:hidden}
+
+    /* ── NAV ── */
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:22px 60px;background:rgba(8,10,15,0.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+    .nav-left{display:flex;align-items:center;gap:18px}
+    .hamburger{display:flex;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;cursor:pointer;background:none;border:none;padding:4px;border-radius:6px;transition:background .2s;flex-shrink:0}
+    .hamburger:hover{background:rgba(255,255,255,0.06)}
+    .hamburger span{display:block;height:2px;width:100%;background:var(--muted);border-radius:2px;transition:background .2s}
+    .hamburger:hover span{background:var(--accent)}
+    .nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .nav-links{display:flex;gap:36px;list-style:none}
+    .nav-links a{text-decoration:none;color:var(--muted);font-size:.85rem;letter-spacing:1px;text-transform:uppercase;transition:color .2s}
+    .nav-links a:hover{color:var(--accent)}
+    .nav-cta{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;color:#000;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase;padding:10px 24px;border-radius:4px;cursor:pointer;transition:opacity .2s}
+    .nav-cta:hover{opacity:.85}
+
+    /* ── SLIDE MENU ── */
+    .slide-menu{position:fixed;top:0;left:0;bottom:0;width:300px;z-index:300;background:#0a0d14;border-right:1px solid var(--border);transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:8px 0 40px rgba(0,0,0,.6)}
+    .slide-menu.open{transform:translateX(0)}
+    .menu-overlay{position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .3s}
+    .menu-overlay.open{opacity:1;pointer-events:all}
+    .menu-header{display:flex;align-items:center;justify-content:space-between;padding:22px 24px;border-bottom:1px solid var(--border)}
+    .menu-logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:3px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .menu-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:color .2s}
+    .menu-close:hover{color:var(--text)}
+    .menu-nav{padding:16px 0;flex:1}
+    .menu-nav a{display:flex;align-items:center;gap:12px;padding:13px 24px;color:var(--muted);text-decoration:none;font-size:.88rem;letter-spacing:1px;text-transform:uppercase;transition:color .2s,background .2s}
+    .menu-nav a:hover{color:var(--text);background:rgba(255,255,255,.04)}
+    .menu-divider{height:1px;background:var(--border);margin:8px 24px}
+    .menu-admin-btn{margin:16px;padding:13px 20px;background:rgba(0,119,255,.08);border:1px solid rgba(0,119,255,.2);border-radius:8px;display:flex;align-items:center;gap:12px;color:var(--accent2);font-size:.85rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:background .2s,border-color .2s;font-family:'DM Sans',sans-serif;font-weight:500;width:calc(100% - 32px)}
+    .menu-admin-btn:hover{background:rgba(0,119,255,.15);border-color:rgba(0,119,255,.4)}
+
+    /* ── PASSCODE MODAL ── */
+    .passcode-modal{position:fixed;inset:0;z-index:600;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s}
+    .passcode-modal.open{opacity:1;pointer-events:all}
+    .passcode-box{background:#0d1017;border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:min(400px,92vw);text-align:center;box-shadow:0 0 80px rgba(0,119,255,.15)}
+    .passcode-icon{font-size:2.5rem;margin-bottom:20px}
+    .passcode-box h3{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:3px;color:var(--accent);margin-bottom:8px}
+    .passcode-box p{color:var(--muted);font-size:.85rem;margin-bottom:32px;line-height:1.6}
+    /* PIN dots display */
+    .pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:28px}
+    .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:background .15s,border-color .15s}
+    .pin-dot.filled{background:var(--accent);border-color:var(--accent)}
+    .pin-dot.error{background:var(--red);border-color:var(--red)}
+    /* Numpad */
+    .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto}
+    .num-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:1.3rem;font-weight:500;height:60px;border-radius:10px;cursor:pointer;transition:background .15s,border-color .15s}
+    .num-btn:hover{background:#1e2535;border-color:rgba(0,229,255,.25)}
+    .num-btn:active{background:#252d40}
+    .num-btn.del{font-size:1rem;color:var(--muted)}
+    .num-btn.del:hover{color:var(--red)}
+    .passcode-error{color:var(--red);font-size:.78rem;margin-top:16px;min-height:20px;transition:opacity .3s}
+    .passcode-cancel{margin-top:20px;background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:color .2s}
+    .passcode-cancel:hover{color:var(--text)}
+
+    /* ── ADMIN PANEL ── */
+    .admin-overlay{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:opacity .3s}
+    .admin-overlay.open{opacity:1;pointer-events:all}
+    .admin-panel{position:fixed;top:0;right:0;bottom:0;width:min(700px,100vw);z-index:500;background:#090c13;border-left:1px solid var(--border);transform:translateX(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+    .admin-panel.open{transform:translateX(0)}
+    .admin-header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);background:rgba(0,119,255,.04);flex-shrink:0}
+    .admin-title{display:flex;align-items:center;gap:10px}
+    .admin-title h2{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;color:var(--accent)}
+    .admin-badge{font-size:.62rem;letter-spacing:2px;text-transform:uppercase;background:rgba(0,229,255,.1);color:var(--accent);padding:3px 8px;border-radius:3px;border:1px solid rgba(0,229,255,.2)}
+    .admin-close{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:color .2s}
+    .admin-close:hover{color:var(--text)}
+    .admin-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+    .admin-tabs::-webkit-scrollbar{height:0}
+    .admin-tab{padding:14px 16px;font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif}
+    .admin-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+    .admin-body{flex:1;overflow-y:auto;padding:28px}
+    .admin-body::-webkit-scrollbar{width:4px}
+    .admin-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+    .tab-pane{display:none}
+    .tab-pane.active{display:block}
+
+    /* Admin UI */
+    .admin-section{margin-bottom:32px}
+    .admin-section-title{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent2);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    .admin-field{margin-bottom:16px}
+    .admin-field label{display:block;font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .admin-field input,.admin-field textarea,.admin-field select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:11px 14px;border-radius:6px;outline:none;transition:border-color .2s}
+    .admin-field input:focus,.admin-field textarea:focus{border-color:var(--accent2)}
+    .admin-field textarea{resize:vertical;min-height:80px}
+    .admin-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .admin-btn{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;color:#000;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.78rem;letter-spacing:1.5px;text-transform:uppercase;padding:11px 22px;border-radius:5px;cursor:pointer;transition:opacity .2s}
+    .admin-btn:hover{opacity:.85}
+    .admin-btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.78rem;letter-spacing:1.5px;text-transform:uppercase;padding:11px 22px;border-radius:5px;cursor:pointer;transition:border-color .2s,color .2s}
+    .admin-btn-ghost:hover{border-color:var(--accent);color:var(--text)}
+    .admin-btn-danger{background:transparent;border:1px solid rgba(255,60,60,.3);color:#ff6b6b;font-family:'DM Sans',sans-serif;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;padding:7px 14px;border-radius:4px;cursor:pointer;transition:background .2s}
+    .admin-btn-danger:hover{background:rgba(255,60,60,.1)}
+    .admin-save-bar{display:flex;gap:10px;align-items:center;padding:16px 28px;border-top:1px solid var(--border);flex-shrink:0;background:var(--surface)}
+    .admin-save-msg{font-size:.78rem;color:var(--accent);opacity:0;transition:opacity .3s;margin-left:auto}
+    .admin-save-msg.show{opacity:1}
+
+    /* Feedback */
+    .feedback-empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:.9rem}
+    .feedback-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:12px}
+    .feedback-item:hover{border-color:rgba(0,119,255,.2)}
+    .feedback-meta{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+    .feedback-name{font-weight:600;font-size:.88rem}
+    .feedback-email{color:var(--muted);font-size:.8rem}
+    .feedback-type{font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;background:rgba(0,119,255,.1);color:var(--accent2);padding:2px 8px;border-radius:3px}
+    .feedback-date{margin-left:auto;font-size:.72rem;color:var(--muted)}
+    .feedback-msg{font-size:.88rem;color:var(--muted);line-height:1.6}
+    .feedback-actions{margin-top:12px;display:flex;gap:8px}
+    .feedback-count{display:inline-flex;align-items:center;justify-content:center;background:var(--accent2);color:#000;font-size:.62rem;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 4px;margin-left:4px}
+
+    /* Upload */
+    .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:40px 24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
+    .upload-zone:hover{border-color:var(--accent2);background:rgba(0,119,255,.04)}
+    .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-icon{font-size:2rem;margin-bottom:12px}
+    .upload-title{font-weight:600;font-size:.95rem;margin-bottom:6px}
+    .upload-sub{font-size:.8rem;color:var(--muted)}
+    .upload-result{margin-top:16px;padding:14px 16px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.15);border-radius:6px;display:none;align-items:center;gap:12px}
+    .upload-result.show{display:flex}
+    .upload-file-name{font-size:.85rem;font-weight:500}
+    .upload-file-size{font-size:.75rem;color:var(--muted)}
+
+    /* Links */
+    .link-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:8px}
+    .link-item-label{font-size:.78rem;color:var(--muted);min-width:80px}
+    .link-item-val{font-size:.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .add-link-row{display:grid;grid-template-columns:1fr 2fr auto;gap:8px;align-items:end}
+
+    /* Change PIN in admin */
+    .pin-change-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .pin-input-wrap{position:relative}
+    .pin-field{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:1.2rem;padding:14px 16px;border-radius:6px;outline:none;letter-spacing:8px;text-align:center;transition:border-color .2s}
+    .pin-field:focus{border-color:var(--accent2)}
+    .pin-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;transition:color .2s}
+    .pin-toggle:hover{color:var(--accent)}
+    .pin-strength{display:flex;gap:4px;margin-top:8px}
+    .pin-strength-bar{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background .3s}
+    .pin-msg{font-size:.78rem;margin-top:10px;display:none;padding:10px 14px;border-radius:6px}
+    .pin-msg.success{display:block;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);color:var(--green)}
+    .pin-msg.error{display:block;background:rgba(255,82,82,.08);border:1px solid rgba(255,82,82,.2);color:var(--red)}
+
+    /* ── VERSION HISTORY section (public) ── */
+    .versions-section{padding:120px 60px;background:var(--surface);border-top:1px solid var(--border)}
+    .versions-inner{max-width:900px;margin:0 auto}
+    .version-timeline{margin-top:64px;position:relative}
+    .version-timeline::before{content:'';position:absolute;left:20px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,var(--accent2),transparent)}
+    .version-item{display:flex;gap:32px;margin-bottom:48px;position:relative}
+    .version-item:last-child{margin-bottom:0}
+    .version-dot{width:41px;height:41px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7rem;font-weight:700;color:var(--accent2);letter-spacing:.5px;position:relative;z-index:1}
+    .version-item.latest .version-dot{background:rgba(0,119,255,.15);border-color:var(--accent2);box-shadow:0 0 16px rgba(0,119,255,.2)}
+    .version-card{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px 28px;transition:border-color .2s}
+    .version-item.latest .version-card{border-color:rgba(0,119,255,.25)}
+    .version-card:hover{border-color:rgba(0,229,255,.2)}
+    .version-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+    .version-num{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:var(--text)}
+    .version-latest-badge{font-size:.62rem;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#000;padding:3px 10px;border-radius:3px;font-weight:700}
+    .version-date{font-size:.75rem;color:var(--muted);margin-bottom:10px}
+    .version-notes{font-size:.87rem;color:var(--muted);line-height:1.7;margin-bottom:16px}
+    .version-notes ul{padding-left:18px;margin-top:6px}
+    .version-notes ul li{margin-bottom:4px}
+    .version-download-btn{display:inline-flex;align-items:center;gap:8px;background:rgba(0,119,255,.1);border:1px solid rgba(0,119,255,.25);color:var(--accent2);font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:9px 18px;border-radius:6px;text-decoration:none;transition:background .2s,border-color .2s}
+    .version-download-btn:hover{background:rgba(0,119,255,.2);border-color:var(--accent)}
+    .version-item.latest .version-download-btn{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;color:#000}
+    .versions-empty{text-align:center;padding:60px;color:var(--muted);font-size:.9rem}
+
+    /* Admin version manager */
+    .version-admin-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+    .version-admin-meta{flex:1;min-width:0}
+    .version-admin-num{font-weight:600;font-size:.9rem;margin-bottom:2px}
+    .version-admin-date{font-size:.75rem;color:var(--muted)}
+    .version-admin-notes{font-size:.8rem;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+
+    /* ── HERO ── */
+    .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:120px 24px 80px;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:900px;height:900px;background:radial-gradient(ellipse,rgba(0,119,255,.12) 0%,transparent 70%);pointer-events:none}
+    .hero::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:600px;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+    .hero-eyebrow{font-size:.75rem;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:24px;animation:fadeUp .8s ease both}
+    .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,14vw,12rem);line-height:.9;letter-spacing:6px;background:linear-gradient(160deg,#fff 30%,#6b7a95 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:fadeUp .8s .1s ease both}
+    .hero-sub{margin-top:32px;max-width:520px;font-size:1.1rem;color:var(--muted);line-height:1.7;animation:fadeUp .8s .2s ease both}
+    .hero-sub span{color:var(--text);font-weight:500}
+    .hero-actions{margin-top:52px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s .3s ease both}
+    .btn-primary{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#000;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.9rem;letter-spacing:.5px;padding:16px 32px;border-radius:6px;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 0 30px rgba(0,119,255,.3)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(0,229,255,.35)}
+    .btn-secondary{display:flex;align-items:center;gap:10px;background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;font-weight:500;font-size:.9rem;padding:16px 32px;border-radius:6px;text-decoration:none;border:1px solid var(--border);transition:border-color .2s,background .2s}
+    .btn-secondary:hover{border-color:var(--accent);background:rgba(0,229,255,.04)}
+    .play-icon{width:22px;height:22px}
+
+    /* STATS */
+    .stats{display:flex;justify-content:center;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:0 40px}
+    .stat{flex:1;max-width:240px;padding:40px 32px;text-align:center;border-right:1px solid var(--border)}
+    .stat:last-child{border-right:none}
+    .stat-num{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;letter-spacing:2px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .stat-label{font-size:.8rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px}
+
+    /* FEATURES */
+    .section{padding:120px 60px;max-width:1200px;margin:0 auto}
+    .section-label{font-size:.72rem;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,5vw,5rem);letter-spacing:3px;line-height:1;margin-bottom:64px}
+    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2px}
+    .feature-card{background:var(--surface);padding:44px 36px;border:1px solid var(--border);position:relative;overflow:hidden;transition:background .3s}
+    .feature-card:hover{background:var(--surface2)}
+    .feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent2),var(--accent),transparent);opacity:0;transition:opacity .3s}
+    .feature-card:hover::before{opacity:1}
+    .feature-icon{width:48px;height:48px;margin-bottom:24px;display:flex;align-items:center;justify-content:center;background:rgba(0,119,255,.1);border-radius:10px;font-size:1.5rem}
+    .feature-card h3{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;margin-bottom:12px}
+    .feature-card p{color:var(--muted);font-size:.92rem;line-height:1.7}
+
+    /* HOW IT WORKS */
+    .how-section{padding:120px 60px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+    .how-inner{max-width:1200px;margin:0 auto}
+    .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:48px;margin-top:64px}
+    .step-num{font-family:'Bebas Neue',sans-serif;font-size:5rem;color:rgba(0,229,255,.08);line-height:1;margin-bottom:-12px}
+    .step h3{font-weight:600;font-size:1rem;margin-bottom:10px;letter-spacing:.5px}
+    .step p{color:var(--muted);font-size:.88rem;line-height:1.7}
+
+    /* DOWNLOAD */
+    .download-section{padding:120px 60px;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+    .download-text .section-title{margin-bottom:20px}
+    .download-text p{color:var(--muted);font-size:1rem;line-height:1.8;margin-bottom:40px}
+    .store-badge{display:inline-flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border);padding:16px 28px;border-radius:10px;text-decoration:none;color:var(--text);transition:border-color .2s,background .2s}
+    .store-badge:hover{border-color:var(--accent);background:rgba(0,229,255,.05)}
+    .store-badge-text{text-align:left}
+    .store-badge-text small{display:block;font-size:.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+    .store-badge-text strong{font-size:1.1rem;font-weight:600}
+    .download-visual{position:relative;display:flex;justify-content:center}
+    .phone-mockup{width:260px;height:520px;background:var(--surface2);border-radius:36px;border:1px solid var(--border);position:relative;overflow:hidden;box-shadow:0 0 80px rgba(0,119,255,.15),0 40px 80px rgba(0,0,0,.6)}
+    .phone-mockup::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,119,255,.08) 0%,transparent 60%)}
+    .phone-screen{position:absolute;top:16px;left:12px;right:12px;bottom:16px;background:var(--bg);border-radius:26px;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
+    .phone-logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .phone-bars{width:100%;display:flex;flex-direction:column;gap:8px}
+    .phone-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+    .phone-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+    .phone-metric{width:100%;background:var(--surface);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border)}
+    .phone-metric-label{font-size:.65rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+    .phone-metric-val{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--accent)}
+    .glow-orb{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(0,119,255,.12),transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+
+    /* CONTACT */
+    .contact-section{padding:120px 60px;background:var(--bg);border-top:1px solid var(--border)}
+    .contact-inner{max-width:700px;margin:0 auto;text-align:center}
+    .contact-inner .section-title{margin-bottom:16px}
+    .contact-inner>p{color:var(--muted);font-size:1rem;line-height:1.8;margin-bottom:32px}
+    .contact-info-bar{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:36px}
+    .contact-info-item{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted)}
+    .contact-info-item a{color:var(--muted);text-decoration:none;transition:color .2s}
+    .contact-info-item a:hover{color:var(--accent)}
+    .contact-form{display:flex;flex-direction:column;gap:16px;text-align:left}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .form-group{display:flex;flex-direction:column;gap:8px}
+    .form-group label{font-size:.75rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .form-group input,.form-group textarea,.form-group select{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.92rem;padding:14px 18px;border-radius:6px;outline:none;transition:border-color .2s;appearance:none}
+    .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--accent2)}
+    .form-group textarea{resize:vertical;min-height:130px}
+    .form-submit{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;color:#000;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.88rem;letter-spacing:1.5px;text-transform:uppercase;padding:18px 40px;border-radius:6px;cursor:pointer;align-self:flex-start;transition:opacity .2s,transform .2s;box-shadow:0 0 30px rgba(0,119,255,.25)}
+    .form-submit:hover{opacity:.88;transform:translateY(-1px)}
+    .form-success{display:none;text-align:center;padding:32px;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.2);border-radius:10px;color:var(--accent);font-size:.95rem}
+
+    /* FOOTER */
+    footer{padding:48px 60px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+    .footer-logo{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:3px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .footer-links{display:flex;gap:28px;list-style:none}
+    .footer-links a{text-decoration:none;color:var(--muted);font-size:.82rem;transition:color .2s}
+    .footer-links a:hover{color:var(--accent)}
+    .footer-copy{color:var(--muted);font-size:.78rem}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+    .reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.visible{opacity:1;transform:none}
+
+    @media(max-width:900px){
+      nav{padding:18px 20px}
+      .nav-links{display:none}
+      .section{padding:80px 24px}
+      .how-section{padding:80px 24px}
+      .download-section{grid-template-columns:1fr;padding:80px 24px;gap:48px}
+      .contact-section{padding:80px 24px}
+      .versions-section{padding:80px 24px}
+      .form-row{grid-template-columns:1fr}
+      footer{padding:40px 24px;flex-direction:column;text-align:center}
+      .stats{margin:0;flex-wrap:wrap}
+      .stat{min-width:160px}
+      .admin-panel{width:100vw}
+      .admin-row,.add-link-row,.pin-change-grid{grid-template-columns:1fr}
+      .version-item{gap:16px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ MENU OVERLAY ═══ -->
+<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+
+<!-- ═══ SLIDE MENU ═══ -->
+<div class="slide-menu" id="slideMenu">
+  <div class="menu-header">
+    <div class="menu-logo">STEPWISE</div>
+    <button class="menu-close" onclick="closeMenu()">✕</button>
+  </div>
+  <nav class="menu-nav">
+    <a href="#features" onclick="closeMenu()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>Features</a>
+    <a href="#how" onclick="closeMenu()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>How It Works</a>
+    <a href="#download" onclick="closeMenu()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>Download</a>
+    <a href="#versions" onclick="closeMenu()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>Versions</a>
+    <a href="#contact" onclick="closeMenu()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contact</a>
+    <div class="menu-divider"></div>
+  </nav>
+  <button class="menu-admin-btn" onclick="openPasscodeModal();closeMenu()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    Admin Panel
+  </button>
+</div>
+
+<!-- ═══ PASSCODE MODAL ═══ -->
+<div class="passcode-modal" id="passcodeModal">
+  <div class="passcode-box">
+    <div class="passcode-icon">🔐</div>
+    <h3>ADMIN ACCESS</h3>
+    <p>Enter your 4-digit PIN to access the admin panel.</p>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot" id="dot0"></div>
+      <div class="pin-dot" id="dot1"></div>
+      <div class="pin-dot" id="dot2"></div>
+      <div class="pin-dot" id="dot3"></div>
+    </div>
+    <div class="numpad">
+      <button class="num-btn" onclick="pinPress('1')">1</button>
+      <button class="num-btn" onclick="pinPress('2')">2</button>
+      <button class="num-btn" onclick="pinPress('3')">3</button>
+      <button class="num-btn" onclick="pinPress('4')">4</button>
+      <button class="num-btn" onclick="pinPress('5')">5</button>
+      <button class="num-btn" onclick="pinPress('6')">6</button>
+      <button class="num-btn" onclick="pinPress('7')">7</button>
+      <button class="num-btn" onclick="pinPress('8')">8</button>
+      <button class="num-btn" onclick="pinPress('9')">9</button>
+      <button class="num-btn del" onclick="pinClear()" style="font-size:.65rem;letter-spacing:1px">CLEAR</button>
+      <button class="num-btn" onclick="pinPress('0')">0</button>
+      <button class="num-btn del" onclick="pinBack()">⌫</button>
+    </div>
+    <div class="passcode-error" id="pinError"></div>
+    <button class="passcode-cancel" onclick="closePasscodeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- ═══ ADMIN OVERLAY ═══ -->
+<div class="admin-overlay" id="adminOverlay" onclick="closeAdmin()"></div>
+
+<!-- ═══ ADMIN PANEL ═══ -->
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-header">
+    <div class="admin-title">
+      <h2>Admin Panel</h2>
+      <span class="admin-badge">🔒 Secured</span>
+    </div>
+    <button class="admin-close" onclick="closeAdmin()">✕</button>
+  </div>
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchTab('content',this)">✏️ Content</button>
+    <button class="admin-tab" onclick="switchTab('apk',this)">📦 APK</button>
+    <button class="admin-tab" onclick="switchTab('versions',this)">🕓 Versions</button>
+    <button class="admin-tab" onclick="switchTab('contact-info',this)">📞 Contact</button>
+    <button class="admin-tab" onclick="switchTab('feedback',this)">💬 Feedback<span class="feedback-count" id="feedbackCount">0</span></button>
+    <button class="admin-tab" onclick="switchTab('security',this)">🔑 PIN</button>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- CONTENT TAB -->
+    <div class="tab-pane active" id="tab-content">
+      <div class="admin-section">
+        <div class="admin-section-title">Hero Section</div>
+        <div class="admin-field"><label>Eyebrow Tagline</label><input type="text" id="heroEyebrowInput" placeholder="AI-Powered Smart Shoe System"/></div>
+        <div class="admin-field"><label>Hero Subtitle</label><textarea id="heroSubInput" rows="3" placeholder="Tagline below the title..."></textarea></div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Feature Cards</div>
+        <div id="featuresEditor"></div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Download Section</div>
+        <div class="admin-field"><label>Description</label><textarea id="downloadDescInput" rows="3"></textarea></div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Footer</div>
+        <div class="admin-field"><label>Copyright Line</label><input type="text" id="footerCopyInput"/></div>
+      </div>
+    </div>
+
+    <!-- APK TAB -->
+    <div class="tab-pane" id="tab-apk">
+      <div class="admin-section">
+        <div class="admin-section-title">Upload New APK Version</div>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:20px;line-height:1.6">Upload an APK to add it to the version history. The most recent upload becomes the default download.</p>
+        <div class="upload-zone">
+          <input type="file" accept=".apk" id="apkFileInput" onchange="handleApkUpload(this)"/>
+          <div class="upload-icon">📦</div>
+          <div class="upload-title">Drop your APK here</div>
+          <div class="upload-sub">or click to browse — .apk files only</div>
+        </div>
+        <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="admin-field" style="margin:0"><label>Version Number</label><input type="text" id="versionNumInput" placeholder="e.g. v1.2.0"/></div>
+          <div class="admin-field" style="margin:0"><label>Release Notes</label><input type="text" id="versionNotesInput" placeholder="e.g. Bug fixes, new UI..."/></div>
+        </div>
+        <button class="admin-btn" style="margin-top:14px" onclick="publishVersion()">Publish Version →</button>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Download Button Labels</div>
+        <div class="admin-row">
+          <div class="admin-field"><label>Main Label</label><input type="text" id="downloadBtnTextInput" placeholder="Stepwise.apk"/></div>
+          <div class="admin-field"><label>Sub-label</label><input type="text" id="downloadBtnSubInput" placeholder="Download for Android"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VERSIONS TAB -->
+    <div class="tab-pane" id="tab-versions">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div class="admin-section-title" style="margin:0;border:none;padding:0">Published Versions</div>
+        <button class="admin-btn-ghost" onclick="clearVersions()" style="font-size:.72rem;padding:8px 14px">Clear All</button>
+      </div>
+      <div id="adminVersionList"></div>
+    </div>
+
+    <!-- CONTACT INFO TAB -->
+    <div class="tab-pane" id="tab-contact-info">
+      <div class="admin-section">
+        <div class="admin-section-title">Direct Contact Details</div>
+        <div class="admin-row">
+          <div class="admin-field"><label>Phone</label><input type="tel" id="contactPhoneInput" placeholder="+1 234 567 8900"/></div>
+          <div class="admin-field"><label>Email</label><input type="email" id="contactEmailInput" placeholder="hello@stepwise.com"/></div>
+        </div>
+        <div class="admin-row">
+          <div class="admin-field"><label>WhatsApp</label><input type="tel" id="contactWhatsappInput" placeholder="+1 234 567 8900"/></div>
+          <div class="admin-field"><label>Instagram</label><input type="text" id="contactInstagramInput" placeholder="@stepwise"/></div>
+        </div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">Custom Links</div>
+        <div id="linksList"></div>
+        <div class="add-link-row" style="margin-top:12px">
+          <div class="admin-field" style="margin:0"><label>Label</label><input type="text" id="newLinkLabel" placeholder="e.g. Twitter"/></div>
+          <div class="admin-field" style="margin:0"><label>URL</label><input type="text" id="newLinkUrl" placeholder="https://..."/></div>
+          <div style="padding-top:22px"><button class="admin-btn" onclick="addLink()">+ Add</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEEDBACK TAB -->
+    <div class="tab-pane" id="tab-feedback">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div class="admin-section-title" style="margin:0;border:none;padding:0">Submitted Messages</div>
+        <button class="admin-btn-ghost" onclick="clearFeedback()" style="font-size:.72rem;padding:8px 14px">Clear All</button>
+      </div>
+      <div id="feedbackList"></div>
+    </div>
+
+    <!-- PIN / SECURITY TAB -->
+    <div class="tab-pane" id="tab-security">
+      <div class="admin-section">
+        <div class="admin-section-title">Change Admin PIN</div>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:24px;line-height:1.6">Your PIN must be exactly 4 digits. Keep it private — it's the only way to access the admin panel.</p>
+        <div class="pin-change-grid">
+          <div class="admin-field">
+            <label>Current PIN</label>
+            <div class="pin-input-wrap">
+              <input type="password" class="pin-field" id="pinCurrent" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" oninput="this.value=this.value.replace(/\D/g,'')"/>
+              <button class="pin-toggle" onclick="togglePinVis('pinCurrent',this)">Show</button>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-end;padding-bottom:4px">
+            <div style="font-size:.75rem;color:var(--muted);line-height:1.5">Enter your current 4-digit PIN to authorize the change.</div>
+          </div>
+          <div class="admin-field">
+            <label>New PIN</label>
+            <div class="pin-input-wrap">
+              <input type="password" class="pin-field" id="pinNew" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" oninput="this.value=this.value.replace(/\D/g,'');updatePinStrength(this.value)"/>
+              <button class="pin-toggle" onclick="togglePinVis('pinNew',this)">Show</button>
+            </div>
+            <div class="pin-strength" id="pinStrengthBars">
+              <div class="pin-strength-bar" id="psb0"></div>
+              <div class="pin-strength-bar" id="psb1"></div>
+              <div class="pin-strength-bar" id="psb2"></div>
+              <div class="pin-strength-bar" id="psb3"></div>
+            </div>
+          </div>
+          <div class="admin-field">
+            <label>Confirm New PIN</label>
+            <div class="pin-input-wrap">
+              <input type="password" class="pin-field" id="pinConfirm" maxlength="4" inputmode="numeric" pattern="[0-9]*" placeholder="••••" oninput="this.value=this.value.replace(/\D/g,'')"/>
+              <button class="pin-toggle" onclick="togglePinVis('pinConfirm',this)">Show</button>
+            </div>
+          </div>
+        </div>
+        <div class="pin-msg" id="pinChangeMsg"></div>
+        <button class="admin-btn" onclick="changePin()" style="margin-top:16px">Update PIN →</button>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-title">PIN Hints</div>
+        <div style="font-size:.83rem;color:var(--muted);line-height:1.8">
+          ✓ &nbsp;Use a PIN you won't forget<br>
+          ✓ &nbsp;Avoid obvious patterns like 1234 or 0000<br>
+          ✓ &nbsp;Your PIN is stored locally in this browser<br>
+          ✓ &nbsp;Default PIN is <strong style="color:var(--text);letter-spacing:3px">1234</strong>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /admin-body -->
+
+  <div class="admin-save-bar">
+    <button class="admin-btn-ghost" onclick="closeAdmin()">Close</button>
+    <button class="admin-btn" onclick="saveAll()">Save & Apply →</button>
+    <span class="admin-save-msg" id="adminSaveMsg">✓ Changes saved!</span>
+  </div>
+</div>
+
+<!-- ═══ NAV ═══ -->
+<nav>
+  <div class="nav-left">
+    <button class="hamburger" onclick="openMenu()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-logo">STEPWISE</div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#download">Download</a></li>
+    <li><a href="#versions">Versions</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#download"><button class="nav-cta">Get the App</button></a>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <p class="hero-eyebrow" id="heroEyebrowDisplay">AI-Powered Smart Shoe System</p>
+  <h1>STEPWISE</h1>
+  <p class="hero-sub" id="heroSubDisplay">Every step you take, <span>turned into actionable intelligence.</span> Real-time biomechanical tracking, AI coaching, and fall detection — all from the sole of your shoe.</p>
+  <div class="hero-actions">
+    <a href="stepwise.apk" download id="heroDownloadBtn" class="btn-primary">
+      <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+      Download APK
+    </a>
+    <a href="#features" class="btn-secondary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+      Explore Features
+    </a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat reveal"><div class="stat-num">Real‑Time</div><div class="stat-label">Biomechanical Data</div></div>
+  <div class="stat reveal"><div class="stat-num">AI</div><div class="stat-label">Powered Coaching</div></div>
+  <div class="stat reveal"><div class="stat-num">Fall</div><div class="stat-label">Detection & Alerts</div></div>
+  <div class="stat reveal"><div class="stat-num">Gesture</div><div class="stat-label">Control Support</div></div>
+</div>
+
+<!-- FEATURES -->
+<section id="features" class="section">
+  <div class="section-label">What It Does</div>
+  <div class="section-title reveal">BUILT FOR<br>PEAK PERFORMANCE</div>
+  <div class="features-grid" id="featuresGrid">
+    <div class="feature-card reveal"><div class="feature-icon">👣</div><h3>Gait Analysis</h3><p>Tracks heel strike angle, gait phase, cadence, and ground contact time — giving you a complete biomechanical picture of how you move.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">📊</div><h3>Live Motion Metrics</h3><p>Step count, cadence, and real-time movement data streamed directly from sensors embedded in the sole to your smartphone.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🧠</div><h3>AI Coaching</h3><p>The companion app analyzes your movement patterns and delivers personalized coaching tips to help you move better and avoid injury.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🚨</div><h3>Fall Detection</h3><p>Automatic fall detection sends instant emergency alerts to designated contacts — designed for athletes, elderly users, and rehab patients.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">🤌</div><h3>Gesture Controls</h3><p>Customize foot gestures for hands-free interaction with the app — pause music, trigger actions, and more without touching your phone.</p></div>
+    <div class="feature-card reveal"><div class="feature-icon">📱</div><h3>Session History</h3><p>Review every session in the companion app. Spot trends, track progress over time, and see how your movement improves week by week.</p></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<div id="how" class="how-section">
+  <div class="how-inner">
+    <div class="section-label">The Process</div>
+    <div class="section-title reveal">HOW IT<br>WORKS</div>
+    <div class="steps">
+      <div class="step reveal"><div class="step-num">01</div><h3>Wear & Pair</h3><p>StepWise sensors are embedded in the sole. Open the app, connect via Bluetooth, and you're ready to go in seconds.</p></div>
+      <div class="step reveal"><div class="step-num">02</div><h3>Move Freely</h3><p>Walk, run, or train. The system silently captures real-time biomechanical data including gait phase, cadence, and heel strike angle.</p></div>
+      <div class="step reveal"><div class="step-num">03</div><h3>Get AI Coaching</h3><p>The app analyzes your movement patterns and delivers personalized coaching insights to improve form and prevent injury.</p></div>
+      <div class="step reveal"><div class="step-num">04</div><h3>Stay Safe</h3><p>Fall detection runs in the background at all times, sending instant emergency alerts to your contacts if a fall is detected.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- DOWNLOAD -->
+<div id="download" class="download-section">
+  <div class="download-text reveal">
+    <div class="section-label">Available Now</div>
+    <div class="section-title">GET THE<br>APP</div>
+    <p id="downloadDescDisplay">Download StepWise for Android and start turning every step into actionable intelligence. Whether you're a runner optimizing performance, a walker focused on injury prevention, or a caregiver monitoring a loved one's mobility — StepWise is built for you.</p>
+    <a href="stepwise.apk" download id="downloadBadgeBtn" class="store-badge">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+      <div class="store-badge-text">
+        <small id="downloadBtnSubDisplay">Download for Android</small>
+        <strong id="downloadBtnTextDisplay">Stepwise.apk</strong>
+      </div>
+    </a>
+    <p style="margin-top:16px;font-size:.78rem;color:var(--muted);line-height:1.6">⚠ Before installing, enable <strong style="color:var(--text)">Install unknown apps</strong> in your Android settings under <em>Security</em>.</p>
+  </div>
+  <div class="download-visual reveal">
+    <div class="glow-orb"></div>
+    <div class="phone-mockup">
+      <div class="phone-screen">
+        <div class="phone-logo">SW</div>
+        <div style="font-size:.65rem;letter-spacing:2px;color:var(--muted);text-align:center;text-transform:uppercase">Today's Summary</div>
+        <div class="phone-metric"><span class="phone-metric-label">Steps</span><span class="phone-metric-val">8,412</span></div>
+        <div class="phone-metric"><span class="phone-metric-label">Balance</span><span class="phone-metric-val">94%</span></div>
+        <div class="phone-metric"><span class="phone-metric-label">Cadence</span><span class="phone-metric-val">162</span></div>
+        <div class="phone-bars">
+          <div style="font-size:.6rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase">Activity</div>
+          <div class="phone-bar"><div class="phone-bar-fill" style="width:78%"></div></div>
+          <div class="phone-bar"><div class="phone-bar-fill" style="width:55%"></div></div>
+          <div class="phone-bar"><div class="phone-bar-fill" style="width:91%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VERSION HISTORY (public) -->
+<section id="versions" class="versions-section">
+  <div class="versions-inner">
+    <div class="section-label">Release History</div>
+    <div class="section-title reveal">VERSION<br>HISTORY</div>
+    <p style="color:var(--muted);font-size:.95rem;line-height:1.8;max-width:600px;margin-bottom:0" class="reveal">Every version of StepWise is available below. Download the latest for the best experience, or access any previous release.</p>
+    <div class="version-timeline reveal" id="publicVersionList">
+      <div class="versions-empty">
+        <div style="font-size:2.5rem;margin-bottom:16px">📦</div>
+        No versions published yet.<br>
+        <span style="font-size:.8rem">Versions will appear here once published from the admin panel.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="contact-section">
+  <div class="contact-inner">
+    <div class="section-label">Get In Touch</div>
+    <div class="section-title reveal">FEEDBACK &<br>CONTACT</div>
+    <p>Have a question, a feature idea, or want to share your experience? We read every message and genuinely value your input.</p>
+    <div class="contact-info-bar" id="contactInfoBar"></div>
+    <form class="contact-form reveal" id="contactForm">
+      <div class="form-row">
+        <div class="form-group"><label>Name</label><input type="text" id="fname" placeholder="Your name" required/></div>
+        <div class="form-group"><label>Email</label><input type="email" id="femail" placeholder="you@example.com" required/></div>
+      </div>
+      <div class="form-group">
+        <label>Message Type</label>
+        <select id="ftype"><option>General Inquiry</option><option>App Feedback</option><option>Bug Report</option><option>Feature Request</option><option>Partnership</option></select>
+      </div>
+      <div class="form-group"><label>Message</label><textarea id="fmessage" placeholder="Tell us what's on your mind..." required></textarea></div>
+      <button type="submit" class="form-submit">Send Message →</button>
+    </form>
+    <div class="form-success" id="formSuccess">✦ &nbsp;Message received — we'll be in touch soon. Thank you!</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">STEPWISE</div>
+  <ul class="footer-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#download">Download</a></li>
+    <li><a href="#versions">Versions</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <p class="footer-copy" id="footerCopyDisplay">© 2026 Stepwise. All rights reserved.</p>
+</footer>
+
+<script>
+/* ════ DATA ════════════════════════════════════════════ */
+let D = {
+  pin: '1234',
+  heroEyebrow: 'AI-Powered Smart Shoe System',
+  heroSub: 'Every step you take, <span>turned into actionable intelligence.</span> Real-time biomechanical tracking, AI coaching, and fall detection — all from the sole of your shoe.',
+  downloadDesc: "Download StepWise for Android and start turning every step into actionable intelligence. Whether you're a runner optimizing performance, a walker focused on injury prevention, or a caregiver monitoring a loved one's mobility — StepWise is built for you.",
+  downloadBtnText: 'Stepwise.apk',
+  downloadBtnSub: 'Download for Android',
+  footerCopy: '© 2026 Stepwise. All rights reserved.',
+  phone:'', email:'', whatsapp:'', instagram:'',
+  links:[], feedback:[], versions:[],
+  features:[
+    {icon:'👣',title:'Gait Analysis',desc:'Tracks heel strike angle, gait phase, cadence, and ground contact time — giving you a complete biomechanical picture of how you move.'},
+    {icon:'📊',title:'Live Motion Metrics',desc:'Step count, cadence, and real-time movement data streamed directly from sensors embedded in the sole to your smartphone.'},
+    {icon:'🧠',title:'AI Coaching',desc:'The companion app analyzes your movement patterns and delivers personalized coaching tips to help you move better and avoid injury.'},
+    {icon:'🚨',title:'Fall Detection',desc:'Automatic fall detection sends instant emergency alerts to designated contacts — designed for athletes, elderly users, and rehab patients.'},
+    {icon:'🤌',title:'Gesture Controls',desc:'Customize foot gestures for hands-free interaction with the app — pause music, trigger actions, and more without touching your phone.'},
+    {icon:'📱',title:'Session History',desc:'Review every session in the companion app. Spot trends, track progress over time, and see how your movement improves week by week.'}
+  ]
+};
+
+function loadD(){try{const s=localStorage.getItem('sw_v3');if(s)D={...D,...JSON.parse(s)}}catch(e){}}
+function saveD(){try{localStorage.setItem('sw_v3',JSON.stringify(D))}catch(e){}}
+function escH(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+/* ════ MENU ════════════════════════════════════════════ */
+function openMenu(){document.getElementById('slideMenu').classList.add('open');document.getElementById('menuOverlay').classList.add('open')}
+function closeMenu(){document.getElementById('slideMenu').classList.remove('open');document.getElementById('menuOverlay').classList.remove('open')}
+
+/* ════ PIN / PASSCODE ══════════════════════════════════ */
+let pinEntry = '';
+
+function openPasscodeModal(){
+  pinEntry='';
+  updateDots();
+  document.getElementById('pinError').textContent='';
+  document.getElementById('passcodeModal').classList.add('open');
+}
+function closePasscodeModal(){
+  document.getElementById('passcodeModal').classList.remove('open');
+  pinEntry='';
+  updateDots();
+}
+function pinPress(digit){
+  if(pinEntry.length>=4)return;
+  pinEntry+=digit;
+  updateDots();
+  if(pinEntry.length===4)setTimeout(checkPin,120);
+}
+function pinBack(){if(pinEntry.length>0){pinEntry=pinEntry.slice(0,-1);updateDots()}}
+function pinClear(){pinEntry='';updateDots()}
+function updateDots(){
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('dot'+i);
+    d.classList.toggle('filled',i<pinEntry.length);
+    d.classList.remove('error');
+  }
+}
+function checkPin(){
+  if(pinEntry===D.pin){
+    closePasscodeModal();
+    openAdmin();
+  } else {
+    for(let i=0;i<4;i++)document.getElementById('dot'+i).classList.add('error');
+    document.getElementById('pinError').textContent='Incorrect PIN. Try again.';
+    document.getElementById('passcode-box');
+    const box=document.querySelector('.passcode-box');
+    box.style.animation='shake .4s ease';
+    setTimeout(()=>{box.style.animation='';pinEntry='';updateDots()},450);
+  }
+}
+
+/* ════ ADMIN ═══════════════════════════════════════════ */
+function openAdmin(){
+  document.getElementById('adminOverlay').classList.add('open');
+  document.getElementById('adminPanel').classList.add('open');
+  populateFields();
+}
+function closeAdmin(){
+  document.getElementById('adminOverlay').classList.remove('open');
+  document.getElementById('adminPanel').classList.remove('open');
+}
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='feedback')renderFeedback();
+  if(name==='versions')renderAdminVersions();
+}
+
+/* ════ CHANGE PIN ══════════════════════════════════════ */
+function togglePinVis(id,btn){
+  const el=document.getElementById(id);
+  if(el.type==='password'){el.type='text';btn.textContent='Hide'}
+  else{el.type='password';btn.textContent='Show'}
+}
+function updatePinStrength(val){
+  const colors=['var(--red)','#ffab00','#69f0ae','var(--green)'];
+  for(let i=0;i<4;i++){
+    document.getElementById('psb'+i).style.background=i<val.length?colors[Math.min(val.length-1,3)]:'var(--border)';
+  }
+}
+function changePin(){
+  const cur=document.getElementById('pinCurrent').value.trim();
+  const nw =document.getElementById('pinNew').value.trim();
+  const cf =document.getElementById('pinConfirm').value.trim();
+  const msg=document.getElementById('pinChangeMsg');
+  msg.className='pin-msg';
+  if(cur!==D.pin){msg.className='pin-msg error';msg.textContent='✗ Current PIN is incorrect.';return}
+  if(!/^\d{4}$/.test(nw)){msg.className='pin-msg error';msg.textContent='✗ PIN must be exactly 4 digits.';return}
+  if(nw!==cf){msg.className='pin-msg error';msg.textContent='✗ PINs do not match.';return}
+  D.pin=nw; saveD();
+  msg.className='pin-msg success';msg.textContent='✓ PIN updated successfully!';
+  ['pinCurrent','pinNew','pinConfirm'].forEach(id=>{document.getElementById(id).value=''});
+  updatePinStrength('');
+}
+
+/* ════ POPULATE FIELDS ═════════════════════════════════ */
+function populateFields(){
+  document.getElementById('heroEyebrowInput').value  =D.heroEyebrow;
+  document.getElementById('heroSubInput').value      =D.heroSub.replace(/<[^>]+>/g,'');
+  document.getElementById('downloadDescInput').value =D.downloadDesc;
+  document.getElementById('downloadBtnTextInput').value=D.downloadBtnText;
+  document.getElementById('downloadBtnSubInput').value =D.downloadBtnSub;
+  document.getElementById('footerCopyInput').value   =D.footerCopy;
+  document.getElementById('contactPhoneInput').value    =D.phone;
+  document.getElementById('contactEmailInput').value    =D.email;
+  document.getElementById('contactWhatsappInput').value =D.whatsapp;
+  document.getElementById('contactInstagramInput').value=D.instagram;
+  renderFeaturesEditor();
+  renderLinks();
+  renderFeedback();
+  renderAdminVersions();
+}
+
+/* ════ FEATURES EDITOR ═════════════════════════════════ */
+function renderFeaturesEditor(){
+  document.getElementById('featuresEditor').innerHTML=D.features.map((f,i)=>`
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+        <input value="${escH(f.icon)}" maxlength="4" style="width:52px;text-align:center;font-size:1.2rem;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px;border-radius:5px;outline:none" oninput="D.features[${i}].icon=this.value"/>
+        <input value="${escH(f.title)}" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:8px 12px;border-radius:5px;outline:none;font-weight:600" oninput="D.features[${i}].title=this.value" placeholder="Feature title"/>
+      </div>
+      <textarea rows="2" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.83rem;padding:8px 12px;border-radius:5px;outline:none;resize:vertical" oninput="D.features[${i}].desc=this.value">${escH(f.desc)}</textarea>
+    </div>`).join('');
+}
+
+/* ════ APK / VERSIONS ══════════════════════════════════ */
+let pendingApkURL=null, pendingApkName='';
+
+function handleApkUpload(input){
+  const file=input.files[0];if(!file)return;
+  if(pendingApkURL)URL.revokeObjectURL(pendingApkURL);
+  pendingApkURL=URL.createObjectURL(file);
+  pendingApkName=file.name;
+  document.getElementById('versionNumInput').placeholder='e.g. v1.0.0';
+  document.getElementById('versionNotesInput').placeholder='What changed in this version?';
+}
+
+function publishVersion(){
+  if(!pendingApkURL){alert('Please upload an APK file first.');return}
+  const num  =(document.getElementById('versionNumInput').value.trim()||'v1.0');
+  const notes=(document.getElementById('versionNotesInput').value.trim()||'New release');
+  const now  =new Date();
+  const dateStr=now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const timeStr=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+  const version={
+    num, notes, dateStr, timeStr,
+    fileName: pendingApkName,
+    url: pendingApkURL,
+    id: Date.now()
+  };
+
+  D.versions.unshift(version); // newest first
+  D.downloadBtnText=pendingApkName||num;
+
+  // update main download buttons to latest
+  document.getElementById('heroDownloadBtn').href  =pendingApkURL;
+  document.getElementById('downloadBadgeBtn').href =pendingApkURL;
+  document.getElementById('downloadBtnTextDisplay').textContent=D.downloadBtnText;
+
+  pendingApkURL=null; pendingApkName='';
+  document.getElementById('apkFileInput').value='';
+  document.getElementById('versionNumInput').value='';
+  document.getElementById('versionNotesInput').value='';
+
+  saveD();
+  renderAdminVersions();
+  renderPublicVersions();
+
+  // flash success
+  const msg=document.getElementById('adminSaveMsg');
+  msg.textContent='✓ Version published!';
+  msg.classList.add('show');
+  setTimeout(()=>{msg.classList.remove('show');msg.textContent='✓ Changes saved!'},3000);
+}
+
+function deleteVersion(id){
+  D.versions=D.versions.filter(v=>v.id!==id);
+  saveD(); renderAdminVersions(); renderPublicVersions();
+}
+function clearVersions(){
+  if(!confirm('Remove all version history?'))return;
+  D.versions=[];saveD();renderAdminVersions();renderPublicVersions();
+}
+
+function renderAdminVersions(){
+  const el=document.getElementById('adminVersionList');
+  if(!D.versions.length){el.innerHTML='<div class="feedback-empty"><div style="font-size:2rem;margin-bottom:12px">📭</div>No versions published yet.</div>';return}
+  el.innerHTML=D.versions.map((v,i)=>`
+    <div class="version-admin-item">
+      <div style="font-size:1.6rem">📦</div>
+      <div class="version-admin-meta">
+        <div class="version-admin-num">${escH(v.num)} ${i===0?'<span style="font-size:.62rem;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#000;padding:2px 8px;border-radius:3px;font-weight:700;letter-spacing:1px">LATEST</span>':''}</div>
+        <div class="version-admin-date">${v.dateStr} at ${v.timeStr} — ${escH(v.fileName)}</div>
+        <div class="version-admin-notes">${escH(v.notes)}</div>
+      </div>
+      <button class="admin-btn-danger" onclick="deleteVersion(${v.id})">Delete</button>
+    </div>`).join('');
+}
+
+function renderPublicVersions(){
+  const el=document.getElementById('publicVersionList');
+  if(!D.versions.length){
+    el.innerHTML='<div class="versions-empty"><div style="font-size:2.5rem;margin-bottom:16px">📦</div>No versions published yet.<br><span style="font-size:.8rem">Versions will appear here once published from the admin panel.</span></div>';
+    return;
+  }
+  el.innerHTML=D.versions.map((v,i)=>`
+    <div class="version-item ${i===0?'latest':''}">
+      <div class="version-dot">${escH(v.num.replace(/[^0-9.]/g,'').substring(0,4)||'—')}</div>
+      <div class="version-card">
+        <div class="version-card-header">
+          <span class="version-num">${escH(v.num)}</span>
+          ${i===0?'<span class="version-latest-badge">Latest</span>':''}
+        </div>
+        <div class="version-date">📅 Released ${v.dateStr} at ${v.timeStr}</div>
+        <div class="version-notes">${escH(v.notes)}</div>
+        <a href="${v.url||'#'}" download="${escH(v.fileName)}" class="version-download-btn">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+          Download ${escH(v.num)}
+        </a>
+      </div>
+    </div>`).join('');
+}
+
+/* ════ LINKS ════════════════════════════════════════════ */
+function renderLinks(){
+  const el=document.getElementById('linksList');
+  if(!D.links.length){el.innerHTML='<p style="font-size:.8rem;color:var(--muted)">No custom links yet.</p>';return}
+  el.innerHTML=D.links.map((l,i)=>`
+    <div class="link-item">
+      <span class="link-item-label">${escH(l.label)}</span>
+      <span class="link-item-val">${escH(l.url)}</span>
+      <button class="admin-btn-danger" onclick="removeLink(${i})">✕</button>
+    </div>`).join('');
+}
+function addLink(){
+  const label=document.getElementById('newLinkLabel').value.trim();
+  const url=document.getElementById('newLinkUrl').value.trim();
+  if(!label||!url)return;
+  D.links.push({label,url});
+  document.getElementById('newLinkLabel').value='';
+  document.getElementById('newLinkUrl').value='';
+  renderLinks();
+}
+function removeLink(i){D.links.splice(i,1);renderLinks()}
+
+/* ════ FEEDBACK ════════════════════════════════════════ */
+function renderFeedback(){
+  const el=document.getElementById('feedbackList');
+  const cnt=document.getElementById('feedbackCount');
+  cnt.textContent=D.feedback.length;
+  if(!D.feedback.length){el.innerHTML='<div class="feedback-empty"><div style="font-size:2rem;margin-bottom:12px">📭</div>No feedback yet.</div>';return}
+  el.innerHTML=[...D.feedback].reverse().map((f,ri)=>{
+    const i=D.feedback.length-1-ri;
+    return`<div class="feedback-item">
+      <div class="feedback-meta">
+        <span class="feedback-name">${escH(f.name)}</span>
+        <span class="feedback-email">${escH(f.email)}</span>
+        <span class="feedback-type">${escH(f.type)}</span>
+        <span class="feedback-date">${f.date}</span>
+      </div>
+      <div class="feedback-msg">${escH(f.message)}</div>
+      <div class="feedback-actions">
+        <a href="mailto:${encodeURIComponent(f.email)}?subject=Re: Your StepWise message" class="admin-btn-ghost" style="font-size:.72rem;padding:7px 14px;text-decoration:none">↩ Reply</a>
+        <button class="admin-btn-danger" onclick="deleteFeedback(${i})">Delete</button>
+      </div>
+    </div>`}).join('');
+}
+function deleteFeedback(i){D.feedback.splice(i,1);saveD();renderFeedback()}
+function clearFeedback(){if(!confirm('Delete all feedback?'))return;D.feedback=[];saveD();renderFeedback()}
+
+/* ════ CONTACT BAR ═════════════════════════════════════ */
+function renderContactBar(){
+  const bar=document.getElementById('contactInfoBar');
+  const items=[];
+  if(D.phone)    items.push(`<div class="contact-info-item"><svg width="14" height="14" fill="none" stroke="var(--accent2)" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.6 3.38 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><a href="tel:${D.phone}">${escH(D.phone)}</a></div>`);
+  if(D.email)    items.push(`<div class="contact-info-item"><svg width="14" height="14" fill="none" stroke="var(--accent2)" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><a href="mailto:${D.email}">${escH(D.email)}</a></div>`);
+  if(D.whatsapp) items.push(`<div class="contact-info-item"><svg width="14" height="14" fill="none" stroke="var(--accent2)" stroke-width="2" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><a href="https://wa.me/${D.whatsapp.replace(/\D/g,'')}" target="_blank">WhatsApp</a></div>`);
+  if(D.instagram)items.push(`<div class="contact-info-item"><svg width="14" height="14" fill="none" stroke="var(--accent2)" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg><a href="https://instagram.com/${D.instagram.replace('@','')}" target="_blank">${escH(D.instagram)}</a></div>`);
+  D.links.forEach(l=>items.push(`<div class="contact-info-item"><svg width="14" height="14" fill="none" stroke="var(--accent2)" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><a href="${escH(l.url)}" target="_blank">${escH(l.label)}</a></div>`));
+  bar.innerHTML=items.join('');
+}
+
+/* ════ SAVE ALL ════════════════════════════════════════ */
+function saveAll(){
+  D.heroEyebrow    =document.getElementById('heroEyebrowInput').value||D.heroEyebrow;
+  D.heroSub        =document.getElementById('heroSubInput').value||D.heroSub;
+  D.downloadDesc   =document.getElementById('downloadDescInput').value||D.downloadDesc;
+  D.downloadBtnText=document.getElementById('downloadBtnTextInput').value||D.downloadBtnText;
+  D.downloadBtnSub =document.getElementById('downloadBtnSubInput').value||D.downloadBtnSub;
+  D.footerCopy     =document.getElementById('footerCopyInput').value||D.footerCopy;
+  D.phone          =document.getElementById('contactPhoneInput').value;
+  D.email          =document.getElementById('contactEmailInput').value;
+  D.whatsapp       =document.getElementById('contactWhatsappInput').value;
+  D.instagram      =document.getElementById('contactInstagramInput').value;
+
+  document.getElementById('heroEyebrowDisplay').textContent   =D.heroEyebrow;
+  document.getElementById('heroSubDisplay').innerHTML          =D.heroSub;
+  document.getElementById('downloadDescDisplay').textContent   =D.downloadDesc;
+  document.getElementById('downloadBtnTextDisplay').textContent=D.downloadBtnText;
+  document.getElementById('downloadBtnSubDisplay').textContent =D.downloadBtnSub;
+  document.getElementById('footerCopyDisplay').textContent     =D.footerCopy;
+
+  document.getElementById('featuresGrid').innerHTML=D.features.map(f=>`
+    <div class="feature-card reveal visible">
+      <div class="feature-icon">${f.icon}</div>
+      <h3>${escH(f.title)}</h3>
+      <p>${escH(f.desc)}</p>
+    </div>`).join('');
+
+  renderContactBar();
+  saveD();
+
+  const msg=document.getElementById('adminSaveMsg');
+  msg.textContent='✓ Changes saved!';
+  msg.classList.add('show');
+  setTimeout(()=>msg.classList.remove('show'),3000);
+}
+
+/* ════ CONTACT FORM ════════════════════════════════════ */
+document.getElementById('contactForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  D.feedback.push({
+    name:   document.getElementById('fname').value,
+    email:  document.getElementById('femail').value,
+    type:   document.getElementById('ftype').value,
+    message:document.getElementById('fmessage').value,
+    date:   new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
+  });
+  saveD();
+  document.getElementById('feedbackCount').textContent=D.feedback.length;
+  this.style.display='none';
+  document.getElementById('formSuccess').style.display='block';
+});
+
+/* ════ SCROLL REVEAL ═══════════════════════════════════ */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){setTimeout(()=>e.target.classList.add('visible'),i*80);obs.unobserve(e.target)}
+  });
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* ════ INIT ════════════════════════════════════════════ */
+loadD();
+renderContactBar();
+renderPublicVersions();
+document.getElementById('feedbackCount').textContent=D.feedback.length;
+</script>
+</body>
+</html>
