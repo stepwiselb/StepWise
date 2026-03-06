@@ -186,6 +186,11 @@
     gap: 16px;
     transition: border-color .2s, transform .2s;
   }
+  .credit-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
   .credit-card:hover {
     border-color: rgba(0,194,255,.3);
     transform: translateX(4px);
@@ -299,18 +304,24 @@
   <div class="credits">
     <div class="credit-card">
       <div class="credit-avatar">H</div>
-      <div class="credit-name">Hussein Merhi</div>
-      <div class="credit-role">Founder</div>
+      <div class="credit-info">
+        <div class="credit-name">Hussein Merhi</div>
+        <div class="credit-role">Founder</div>
+      </div>
     </div>
     <div class="credit-card">
       <div class="credit-avatar">A</div>
-      <div class="credit-name">Ali Badreldeen</div>
-      <div class="credit-role">Coordinator</div>
+      <div class="credit-info">
+        <div class="credit-name">Ali Badreldeen</div>
+        <div class="credit-role">Coordinator</div>
+      </div>
     </div>
     <div class="credit-card">
       <div class="credit-avatar">Z</div>
-      <div class="credit-name">Ziad Al Ezzi</div>
-      <div class="credit-role">Lead Developer</div>
+      <div class="credit-info">
+        <div class="credit-name">Ziad Al Ezzi</div>
+        <div class="credit-role">Lead Developer</div>
+      </div>
     </div>
   </div>
 
